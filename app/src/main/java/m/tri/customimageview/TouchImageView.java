@@ -1030,6 +1030,8 @@ public class TouchImageView extends ImageView {
      * @return area not inside this image
      */
     public boolean zooomArea(float focusX, float focusY, float width, float height, float percent, long duration, @Nullable Handler handlerCompleted) {
+        Log.e("scaleX", String.valueOf(scaleX));
+        Log.e("scaleY", String.valueOf(scaleY));
         if (percent <= 0.0f || percent > 1.0f) percent = 0.7f;
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
@@ -1039,35 +1041,68 @@ public class TouchImageView extends ImageView {
         focusX = focusX * metrics.scaledDensity;
         focusY = focusY * metrics.scaledDensity;
 
-        RectF rectSmall = new RectF(focusX - width / 2, focusY - height / 2, focusX + width / 2, focusY + height / 2);
+        float scale = Math.min(scaleX, scaleY); // FIT_CENTER
 
-        float repercent = (1 - percent) / 2;
-        float wid = repercent * width / percent;
-        float hei = repercent * height / percent;
-        if (rectSmall.left > wid &&
-                getWidth() / scaleX - rectSmall.right > wid &&
-                rectSmall.top > hei &&
-                getHeight() / scaleY - rectSmall.bottom > hei) {
-
-            float mX = getWidth() * percent / (width * scaleX);
-            float mY = getHeight() * percent / (height * scaleY);
-
-            float targetZoom = Math.min(mX, mY);
-
-            float left = getWidth() / 2 - width / 2 * scaleX * targetZoom;
-            float right = getWidth() / 2 + width / 2 * scaleX * targetZoom;
-            float top = getHeight() / 2 - height / 2 * scaleY * targetZoom;
-            float bottom = getHeight() / 2 + height / 2 * scaleY * targetZoom;
-
-            RectF rectF = new RectF(left, top, right, bottom);
-            DoubleTapZoom doubleTap = new DoubleTapZoom(targetZoom, focusX, focusY, false, duration, rectF, handlerCompleted);
-            compatPostOnAnimation(doubleTap);
-
-            Log.d(DEBUG, "targetZoom " + targetZoom);
-            return true;
+        float mX = getWidth() * percent / (width * scale);
+        float mY = getHeight() * percent / (height * scale);
+        float targetZoom = Math.min(mX, mY);
+        if (targetZoom < minScale) {
+            targetZoom = minScale;
         }
 
-        return false;
+        float left = getWidth() / 2 - width / 2 * scale * targetZoom;
+        float right = getWidth() / 2 + width / 2 * scale * targetZoom;
+        float top = getHeight() / 2 - height / 2 * scale * targetZoom;
+        float bottom = getHeight() / 2 + height / 2 * scale * targetZoom;
+
+        float percentX, percentY;
+        percentX = percentY = percent;
+
+        if (targetZoom == minScale) {
+            percentX = width * scale * targetZoom / getWidth();
+            percentY = height * scale * targetZoom / getHeight();
+        } else if (targetZoom == mX) {
+            percentY = height * scale * targetZoom / getHeight();
+        } else {
+            percentX = width * scale * targetZoom / getWidth();
+        }
+
+        float imageWidth = getWidth() / scaleX;
+        float imageHeight = getHeight() / scaleY;
+        float fullWidth = width / percentX;
+        float fullHeight = height / percentY;
+
+        if (focusX < fullWidth / 2) {
+            float offsetX = (focusX - fullWidth / 2) * scale * targetZoom;
+            left += offsetX;
+            right += offsetX;
+            focusX = fullWidth / 2;
+        }
+        if (focusY < fullHeight / 2) {
+            float offsetY = (focusY - fullHeight / 2) * scale * targetZoom;
+            top += offsetY;
+            bottom += offsetY;
+            focusY = fullHeight / 2;
+        }
+        if (focusX > imageWidth - fullWidth / 2) {
+            float offsetX = (focusX - (imageWidth - fullWidth / 2)) * scale * targetZoom;
+            left += offsetX;
+            right += offsetX;
+            focusX = imageWidth - fullWidth / 2;
+        }
+        if (focusY > imageHeight - fullHeight / 2) {
+            float offsetY = (focusY - (imageHeight - fullHeight / 2)) * scale * targetZoom;
+            top += offsetY;
+            bottom += offsetY;
+            focusY = imageHeight - fullHeight / 2;
+        }
+
+        RectF rectF = new RectF(left, top, right, bottom);
+        DoubleTapZoom doubleTap = new DoubleTapZoom(targetZoom, focusX, focusY, false, duration, rectF, handlerCompleted);
+        compatPostOnAnimation(doubleTap);
+
+        Log.d(DEBUG, "targetZoom " + targetZoom);
+        return true;
     }
 
 
