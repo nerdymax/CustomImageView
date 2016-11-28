@@ -1041,30 +1041,30 @@ public class TouchImageView extends ImageView {
         focusX = focusX * metrics.scaledDensity;
         focusY = focusY * metrics.scaledDensity;
 
-        float scale = Math.min(scaleX, scaleY); // FIT_CENTER
+        float scale = Math.max(scaleX, scaleY); // CENTER_CROP
 
-        float mX = getWidth() * percent / (width * scale);
-        float mY = getHeight() * percent / (height * scale);
+        float mX = getWidth() * percent / (width * scaleX);
+        float mY = getHeight() * percent / (height * scaleY);
         float targetZoom = Math.min(mX, mY);
         if (targetZoom < minScale) {
             targetZoom = minScale;
         }
 
-        float left = getWidth() / 2 - width / 2 * scale * targetZoom;
-        float right = getWidth() / 2 + width / 2 * scale * targetZoom;
-        float top = getHeight() / 2 - height / 2 * scale * targetZoom;
-        float bottom = getHeight() / 2 + height / 2 * scale * targetZoom;
+        float left = getWidth() / 2 - width / 2 * scaleX * targetZoom;
+        float right = getWidth() / 2 + width / 2 * scaleX * targetZoom;
+        float top = getHeight() / 2 - height / 2 * scaleY * targetZoom;
+        float bottom = getHeight() / 2 + height / 2 * scaleY * targetZoom;
 
         float percentX, percentY;
         percentX = percentY = percent;
 
         if (targetZoom == minScale) {
-            percentX = width * scale * targetZoom / getWidth();
-            percentY = height * scale * targetZoom / getHeight();
+            percentX = width * scaleX * targetZoom / getWidth();
+            percentY = height * scaleY * targetZoom / getHeight();
         } else if (targetZoom == mX) {
-            percentY = height * scale * targetZoom / getHeight();
+            percentY = height * scaleY * targetZoom / getHeight();
         } else {
-            percentX = width * scale * targetZoom / getWidth();
+            percentX = width * scaleX * targetZoom / getWidth();
         }
 
         float imageWidth = getWidth() / scaleX;
@@ -1073,25 +1073,25 @@ public class TouchImageView extends ImageView {
         float fullHeight = height / percentY;
 
         if (focusX < fullWidth / 2) {
-            float offsetX = (focusX - fullWidth / 2) * scale * targetZoom;
+            float offsetX = (focusX - fullWidth / 2) * scaleX * targetZoom;
             left += offsetX;
             right += offsetX;
             focusX = fullWidth / 2;
         }
         if (focusY < fullHeight / 2) {
-            float offsetY = (focusY - fullHeight / 2) * scale * targetZoom;
+            float offsetY = (focusY - fullHeight / 2) * scaleY * targetZoom;
             top += offsetY;
             bottom += offsetY;
             focusY = fullHeight / 2;
         }
         if (focusX > imageWidth - fullWidth / 2) {
-            float offsetX = (focusX - (imageWidth - fullWidth / 2)) * scale * targetZoom;
+            float offsetX = (focusX - (imageWidth - fullWidth / 2)) * scaleX * targetZoom;
             left += offsetX;
             right += offsetX;
             focusX = imageWidth - fullWidth / 2;
         }
         if (focusY > imageHeight - fullHeight / 2) {
-            float offsetY = (focusY - (imageHeight - fullHeight / 2)) * scale * targetZoom;
+            float offsetY = (focusY - (imageHeight - fullHeight / 2)) * scaleY * targetZoom;
             top += offsetY;
             bottom += offsetY;
             focusY = imageHeight - fullHeight / 2;
