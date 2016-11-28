@@ -72,8 +72,12 @@ public class MainActivity extends AppCompatActivity {
         btnZoomArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (imageView.zooomArea(seekBarX.getProgress(),
-                        seekBarY.getProgress(),
+
+                final float focusX = seekBarX.getProgress() + (float)seekBarW.getProgress() / 2;
+                final float focusY = seekBarY.getProgress() + (float)seekBarH.getProgress() / 2;
+
+                if (imageView.zooomArea(focusX,
+                        focusY,
                         seekBarW.getProgress(),
                         seekBarH.getProgress(),
                         0.7f,
